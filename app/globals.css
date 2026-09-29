@@ -1,0 +1,740 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+
+:root {
+  --bg: #0d0e14;
+  --bg-raised: #14161f;
+  --line: #262838;
+  --text: #e8e9ee;
+  --text-dim: #8a8d9e;
+  --buy: #7ef2a8;
+  --buy-dim: #2a4b3a;
+  --sell: #e94fd8;
+  --sell-dim: #4a2a45;
+  /* Warna sparkline dipisah dari --buy/--sell (itu buat badge zone) — di
+     chart harga naik/turun orang biasa expect hijau/merah asli kayak di
+     app Pluang, bukan hijau/pink. */
+  --spark-up: #4ade80;
+  --spark-down: #f2574f;
+  --amber: #f2c46d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+.wrap {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 20px 80px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+}
+
+.title-block h1 {
+  margin: 0 0 6px;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.title-block p {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 13.5px;
+  max-width: 46ch;
+  line-height: 1.5;
+}
+
+.legend {
+  display: flex;
+  gap: 14px;
+  font-size: 12.5px;
+  color: var(--text-dim);
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot.buy {
+  background: var(--buy);
+}
+
+.dot.sell {
+  background: var(--sell);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+button.refresh {
+  background: var(--buy);
+  color: #06130c;
+  border: none;
+  border-radius: 6px;
+  padding: 9px 16px;
+  font-weight: 600;
+  font-size: 13.5px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+button.refresh:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+button.refresh:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+button.refresh:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+label.only-matches {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13.5px;
+  color: var(--text-dim);
+}
+
+.status-line {
+  color: var(--text-dim);
+  font-size: 12.5px;
+  margin-left: auto;
+}
+
+.status-line .num {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.error-box {
+  border: 1px solid var(--sell-dim);
+  background: rgba(233, 79, 216, 0.06);
+  color: var(--sell);
+  padding: 14px 16px;
+  border-radius: 6px;
+  font-size: 13.5px;
+  margin-bottom: 20px;
+}
+
+.coin-card {
+  border: 1px solid var(--line);
+  border-left: 3px solid transparent;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.coin-card.match {
+  border-left-color: var(--buy);
+  background: rgba(126, 242, 168, 0.05);
+}
+
+.coin-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+
+.coin-card .symbol {
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.coin-card .price {
+  color: var(--text-dim);
+  font-size: 13.5px;
+}
+
+.tf-row {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.tf-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 64px;
+}
+
+.tf-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.tf-badge {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+.tf-badge.buy {
+  border-color: rgba(126, 242, 168, 0.35);
+}
+
+.tf-badge.sell {
+  border-color: rgba(233, 79, 216, 0.35);
+}
+
+.tf-badge.buy {
+  background: var(--buy-dim);
+  color: var(--buy);
+}
+
+.tf-badge.sell {
+  background: var(--sell-dim);
+  color: var(--sell);
+}
+
+.tf-badge.neutral {
+  background: var(--bg-raised);
+  color: var(--text-dim);
+}
+
+.tf-badge.error {
+  background: var(--bg-raised);
+  color: var(--amber);
+}
+
+.empty-state {
+  padding: 40px 14px;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 13.5px;
+}
+
+.readme-box {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+.readme-box b {
+  color: var(--text);
+}
+
+footer.note {
+  margin-top: 32px;
+  color: var(--text-dim);
+  font-size: 12px;
+  line-height: 1.6;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+@media (max-width: 420px) {
+  .tf-row {
+    gap: 14px;
+  }
+  .tf-cell {
+    min-width: 56px;
+  }
+}
+
+/* --- mode tabs (ikon + label, scrollable di layar sempit) --- */
+.mode-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 2px;
+}
+.mode-tabs::-webkit-scrollbar {
+  display: none;
+}
+.mode-tab {
+  flex: 0 0 auto;
+  min-width: 76px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px 14px;
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--text-dim);
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease,
+    transform 0.15s ease;
+}
+.mode-tab:hover {
+  color: var(--text);
+  border-color: var(--text-dim);
+}
+.mode-tab:active {
+  transform: scale(0.96);
+}
+.mode-tab.active {
+  color: var(--text);
+  border-color: var(--buy);
+  background: rgba(126, 242, 168, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(126, 242, 168, 0.25);
+}
+.mode-tab-icon {
+  font-size: 19px;
+  line-height: 1;
+}
+.mode-tab-label {
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+@media (min-width: 640px) {
+  .mode-tabs {
+    overflow-x: visible;
+  }
+  .mode-tab {
+    flex: 1;
+  }
+}
+
+/* --- info box: chip ringkasan + isi collapsible, ganti readme-box lama --- */
+.info-box {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  background: var(--bg-raised);
+}
+.info-box-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+.info-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.info-chip {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.info-caret {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+.info-caret.open {
+  color: var(--buy);
+}
+.info-box-body {
+  padding: 4px 16px 14px;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  line-height: 1.6;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+.info-box-body b {
+  color: var(--text);
+}
+
+.coin-meta {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+.coin-meta .up { color: var(--buy); }
+.coin-meta .down { color: var(--sell); }
+
+.ds-logo {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.ds-logo img { width: 100%; height: 100%; object-fit: cover; }
+.ds-logo-fallback {
+  font-size: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  color: var(--text-dim);
+}
+
+.coin-card-top .symbol {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* --- baris ticker + nama koin + mini chart (ala list Pluang) --- */
+.coin-card-top {
+  align-items: center;
+  gap: 10px;
+}
+
+.ds-logo-lg {
+  width: 30px;
+  height: 30px;
+}
+
+.coin-id-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  gap: 1px;
+}
+
+.coin-id-text .ticker {
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+}
+
+.coin-id-text .coin-name {
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--text-dim);
+}
+
+.sparkline {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.sparkline-empty {
+  width: 72px;
+  height: 28px;
+}
+
+.sparkline.up polyline {
+  stroke: var(--spark-up);
+}
+
+.sparkline.down polyline {
+  stroke: var(--spark-down);
+}
+
+.coin-price-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  min-width: 78px;
+}
+
+.coin-price-block .price {
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.coin-price-block .change {
+  font-size: 11.5px;
+  color: var(--text-dim);
+}
+
+.coin-price-block .change.up {
+  color: var(--buy);
+}
+
+.coin-price-block .change.down {
+  color: var(--sell);
+}
+
+@media (max-width: 420px) {
+  .sparkline {
+    display: none;
+  }
+}
+.pill {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+.pill.pump { color: var(--amber); border-color: var(--amber); }
+
+.coin-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.link-btn {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--bg-raised);
+  color: var(--text);
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+.link-btn:hover { border-color: var(--text-dim); }
+.link-btn.chart { border-color: var(--buy); }
+
+/* --- link ikon logo asli (TradingView/pump.fun/DexScreener/GeckoTerminal/Pluang) --- */
+.icon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--bg-raised);
+  flex-shrink: 0;
+  transition: border-color 0.2s ease;
+}
+.icon-link:hover { border-color: var(--text-dim); }
+.icon-link img { width: 18px; height: 18px; border-radius: 4px; }
+.icon-link.pumpfun { border-color: var(--amber); }
+.icon-link.tradingview { border-color: var(--buy); }
+.icon-link.pluang { border-color: var(--spark-up); }
+.icon-link.dexscreener { border-color: var(--line); }
+.icon-link.geckoterminal { border-color: var(--line); }
+
+/* --- tombol salin contract address --- */
+.ca-copy {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px dashed var(--line);
+  background: var(--bg-raised);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.ca-copy:hover { border-color: var(--text-dim); color: var(--text); }
+
+/* --- status per sumber data (GMGN/Helius/Etherscan) di Wallet Watch --- */
+.source-status {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 6px 0 10px;
+}
+.source-status-chip {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-raised);
+  color: var(--text-dim);
+}
+.source-status-chip.ok { border-color: var(--buy-dim); color: var(--buy); }
+.source-status-chip.fail { border-color: var(--sell-dim); color: var(--sell); cursor: help; }
+.source-status-chip.skip { opacity: 0.55; }
+
+.tf-row.wrap-tf {
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.tf-chip {
+  font-size: 11px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--bg-raised);
+  color: var(--text-dim);
+  font-family: "IBM Plex Mono", monospace;
+  cursor: pointer;
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+.tf-chip.buy { color: var(--buy); border-color: var(--buy-dim); background: var(--buy-dim); }
+.tf-chip.sell { color: var(--sell); border-color: var(--sell-dim); background: var(--sell-dim); }
+.tf-chip.neutral { color: var(--text); }
+.tf-chip.error { color: var(--amber); border-color: var(--amber); }
+.tf-chip.disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.loading-tf {
+  font-size: 11px;
+  color: var(--text-dim);
+  align-self: center;
+}
+.tag-note {
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.memecoin-panel select,
+.memecoin-panel input {
+  background: var(--bg-raised);
+  border: 1px solid var(--line);
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-family: inherit;
+}
+.memecoin-panel input { flex: 1; min-width: 160px; }
+
+/* --- market switch, filter sisi & chip TF --- */
+.coin-card.match-sell {
+  border-left-color: var(--sell);
+  background: rgba(233, 79, 216, 0.05);
+}
+
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.seg-btn {
+  background: transparent;
+  color: var(--text-dim);
+  border: none;
+  border-right: 1px solid var(--line);
+  padding: 8px 13px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.seg-btn:last-child {
+  border-right: none;
+}
+
+.seg-btn.active {
+  background: var(--bg-raised);
+  color: var(--text);
+}
+
+.seg-btn.active.buy {
+  color: var(--buy);
+}
+
+.seg-btn.active.sell {
+  color: var(--sell);
+}
+
+.controls.filters {
+  margin-top: -6px;
+}
+
+.tf-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tf-chip {
+  background: transparent;
+  color: var(--text-dim);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.tf-chip.on {
+  background: var(--bg-raised);
+  color: var(--text);
+  border-color: var(--text-dim);
+}
+
+.tf-fail {
+  align-self: flex-end;
+  font-size: 11px;
+  color: var(--amber);
+}
